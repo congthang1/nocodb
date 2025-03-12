@@ -21,6 +21,8 @@ import { DataApiLimiterGuard } from '~/guards/data-api-limiter.guard';
 import { TenantContext } from '~/decorators/tenant-context.decorator';
 import { NcContext, NcRequest } from '~/interface/config';
 
+const USER_PERMISSION_FIELD = process.env.USER_PERMISSION_FIELD || 'User';
+const CREATED_BY_PERMISSION_FIELD = process.env.CREATED_BY_PERMISSION_FIELD || 'Created by';
 @Controller()
 @UseGuards(DataApiLimiterGuard, GlobalGuard)
 export class DataAliasController {
@@ -43,6 +45,11 @@ export class DataAliasController {
     @Query('getHiddenColumns') getHiddenColumns: string,
   ) {
     const startTime = process.hrtime();
+    let isOwner  = req.user.base_roles.owner;
+    let creator = req.user.base_roles.creator;
+    if(!isOwner && !creator){
+      req.query.where = `(${USER_PERMISSION_FIELD},eq,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id})`;
+    }
     const responseData = await this.datasService.dataList(context, {
       query: req.query,
       baseName: baseName,
@@ -115,6 +122,11 @@ export class DataAliasController {
     @Param('tableName') tableName: string,
     @Param('viewName') viewName: string,
   ) {
+    let isOwner  = req.user.base_roles.owner;
+    let creator = req.user.base_roles.creator;
+    if(!isOwner && !creator){
+      req.query.where = `(${USER_PERMISSION_FIELD},eq,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id})`;
+    }
     const countResult = await this.datasService.dataCount(context, {
       query: req.query,
       baseName: baseName,
@@ -194,6 +206,24 @@ export class DataAliasController {
     @Param('viewName') viewName: string,
     @Param('rowId') rowId: string,
   ) {
+    let isOwner  = req.user.base_roles.owner;
+    let creator = req.user.base_roles.creator;
+    if(!isOwner && !creator){
+      req.query.where = `(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id})`;
+    }
+    let dataDelete = await this.datasService.dataFindOne(context, {
+      query: req.query,
+      baseName: baseName,
+      tableName: tableName,
+      viewName: viewName,
+    });
+    if(!dataDelete.Id){
+      return JSON.stringify({
+        status: 'error',
+        message: 'Record not found',
+      });
+    }
+
     return await this.datasService.dataDelete(context, {
       baseName: baseName,
       tableName: tableName,
