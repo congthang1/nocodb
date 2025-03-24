@@ -49,7 +49,7 @@ export class DataAliasController {
     let isOwner  = req.user.base_roles.owner;
     let creator = req.user.base_roles.creator;
     if(!isOwner && !creator){
-      req.query.where = `(${USER_PERMISSION_FIELD},eq,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},eq,${req.user.id})`;
+      req.query.where = `(${USER_PERMISSION_FIELD},anyof,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},anyof,${req.user.id})`;
     }
     const responseData = await this.datasService.dataList(context, {
       query: req.query,
@@ -131,7 +131,7 @@ export class DataAliasController {
     let isOwner  = req.user.base_roles.owner;
     let creator = req.user.base_roles.creator;
     if(!isOwner && !creator){
-      req.query.where = `(${USER_PERMISSION_FIELD},eq,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},eq,${req.user.id})`;
+      req.query.where = `(${USER_PERMISSION_FIELD},anyof,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},anyof,${req.user.id})`;
     }
     const countResult = await this.datasService.dataCount(context, {
       query: req.query,
@@ -254,6 +254,11 @@ export class DataAliasController {
     @Query('opt') opt: string,
     @Query('getHiddenColumn') getHiddenColumn: string,
   ) {
+    let isOwner  = req.user.base_roles.owner;
+    let creator = req.user.base_roles.creator;
+    if(!isOwner && !creator){
+      req.query.where = `(${USER_PERMISSION_FIELD},anyof,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},anyof,${req.user.id})`;
+    }
     return await this.datasService.dataRead(context, {
       baseName: baseName,
       tableName: tableName,
@@ -279,6 +284,11 @@ export class DataAliasController {
     @Param('viewName') viewName: string,
     @Param('rowId') rowId: string,
   ) {
+    let isOwner  = req.user.base_roles.owner;
+    let creator = req.user.base_roles.creator;
+    if(!isOwner && !creator){
+      req.query.where = `(${USER_PERMISSION_FIELD},anyof,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},anyof,${req.user.id})`;
+    }
     const exists = await this.datasService.dataExist(context, {
       baseName: baseName,
       tableName: tableName,
@@ -310,7 +320,7 @@ export class DataAliasController {
     let isOwner  = req.user.base_roles.owner;
     let creator = req.user.base_roles.creator;
     if(!isOwner && !creator){
-      req.query.where = `(${USER_PERMISSION_FIELD},eq,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},eq,${req.user.id})`;
+      req.query.where = `(${USER_PERMISSION_FIELD},anyof,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},anyof,${req.user.id})`;
     }
     const groupedData = await this.datasService.groupedDataList(context, {
       baseName: baseName,

@@ -17,6 +17,10 @@ import { Acl } from '~/middlewares/extract-ids/extract-ids.middleware';
 import { TenantContext } from '~/decorators/tenant-context.decorator';
 import { NcContext, NcRequest } from '~/interface/config';
 
+const USER_PERMISSION_FIELD = process.env.USER_PERMISSION_FIELD || 'User';
+const CREATED_BY_PERMISSION_FIELD = process.env.CREATED_BY_PERMISSION_FIELD || 'CreatedBy';
+const MANAGED_BY_PERMISSION_FIELD = process.env.MANAGED_BY_PERMISSION_FIELD || 'ManagedBy';
+
 @Controller()
 @UseGuards(DataApiLimiterGuard, GlobalGuard)
 export class CalendarDatasController {
@@ -31,6 +35,11 @@ export class CalendarDatasController {
     @Query('from_date') fromDate: string,
     @Query('to_date') toDate: string,
   ) {
+    let isOwner  = req.user.base_roles.owner;
+    let creator = req.user.base_roles.creator;
+    if(!isOwner && !creator){
+      req.query.where = `(${USER_PERMISSION_FIELD},anyof,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},anyof,${req.user.id})`;
+    }
     return await this.calendarDatasService.getCalendarDataList(context, {
       viewId: viewId,
       query: req.query,
@@ -54,7 +63,11 @@ export class CalendarDatasController {
     @Query('to_date') toDate: string,
   ) {
     const startTime = process.hrtime();
-
+    let isOwner  = req.user.base_roles.owner;
+    let creator = req.user.base_roles.creator;
+    if(!isOwner && !creator){
+      req.query.where = `(${USER_PERMISSION_FIELD},anyof,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},anyof,${req.user.id})`;
+    }
     const data = await this.calendarDatasService.getCalendarRecordCount(
       context,
       {
@@ -81,6 +94,12 @@ export class CalendarDatasController {
     @Query('from_date') fromDate: string,
     @Query('to_date') toDate: string,
   ) {
+
+    let isOwner  = req.user.base_roles.owner;
+    let creator = req.user.base_roles.creator;
+    if(!isOwner && !creator){
+      req.query.where = `(${USER_PERMISSION_FIELD},anyof,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},anyof,${req.user.id})`;
+    }
     return await this.calendarDatasService.getPublicCalendarRecordCount(
       context,
       {
@@ -104,6 +123,11 @@ export class CalendarDatasController {
     @Query('from_date') fromDate: string,
     @Query('to_date') toDate: string,
   ) {
+    let isOwner  = req.user.base_roles.owner;
+    let creator = req.user.base_roles.creator;
+    if(!isOwner && !creator){
+      req.query.where = `(${USER_PERMISSION_FIELD},anyof,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},anyof,${req.user.id})`;
+    }
     return await this.calendarDatasService.getPublicCalendarDataList(context, {
       query: req.query,
       password: req.headers?.['xc-password'] as string,
