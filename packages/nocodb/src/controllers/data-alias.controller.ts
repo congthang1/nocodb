@@ -22,7 +22,8 @@ import { TenantContext } from '~/decorators/tenant-context.decorator';
 import { NcContext, NcRequest } from '~/interface/config';
 
 const USER_PERMISSION_FIELD = process.env.USER_PERMISSION_FIELD || 'User';
-const CREATED_BY_PERMISSION_FIELD = process.env.CREATED_BY_PERMISSION_FIELD || 'Created by';
+const CREATED_BY_PERMISSION_FIELD = process.env.CREATED_BY_PERMISSION_FIELD || 'CreatedBy';
+const MANAGED_BY_PERMISSION_FIELD = process.env.MANAGED_BY_PERMISSION_FIELD || 'ManagedBy';
 @Controller()
 @UseGuards(DataApiLimiterGuard, GlobalGuard)
 export class DataAliasController {
@@ -48,7 +49,7 @@ export class DataAliasController {
     let isOwner  = req.user.base_roles.owner;
     let creator = req.user.base_roles.creator;
     if(!isOwner && !creator){
-      req.query.where = `(${USER_PERMISSION_FIELD},eq,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id})`;
+      req.query.where = `(${USER_PERMISSION_FIELD},eq,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},eq,${req.user.id})`;
     }
     const responseData = await this.datasService.dataList(context, {
       query: req.query,
@@ -101,6 +102,11 @@ export class DataAliasController {
     @Param('tableName') tableName: string,
     @Param('viewName') viewName: string,
   ) {
+    let isOwner  = req.user.base_roles.owner;
+    let creator = req.user.base_roles.creator;
+    if(!isOwner && !creator){
+      req.query.where = `(${USER_PERMISSION_FIELD},eq,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},eq,${req.user.id})`;
+    }
     return await this.datasService.dataGroupBy(context, {
       query: req.query,
       baseName: baseName,
@@ -125,7 +131,7 @@ export class DataAliasController {
     let isOwner  = req.user.base_roles.owner;
     let creator = req.user.base_roles.creator;
     if(!isOwner && !creator){
-      req.query.where = `(${USER_PERMISSION_FIELD},eq,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id})`;
+      req.query.where = `(${USER_PERMISSION_FIELD},eq,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},eq,${req.user.id})`;
     }
     const countResult = await this.datasService.dataCount(context, {
       query: req.query,
@@ -301,6 +307,11 @@ export class DataAliasController {
     @Param('columnId') columnId: string,
   ) {
     const startTime = process.hrtime();
+    let isOwner  = req.user.base_roles.owner;
+    let creator = req.user.base_roles.creator;
+    if(!isOwner && !creator){
+      req.query.where = `(${USER_PERMISSION_FIELD},eq,${req.user.id}),~or(${CREATED_BY_PERMISSION_FIELD},eq,${req.user.id}),~or(${MANAGED_BY_PERMISSION_FIELD},eq,${req.user.id})`;
+    }
     const groupedData = await this.datasService.groupedDataList(context, {
       baseName: baseName,
       tableName: tableName,
